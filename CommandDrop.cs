@@ -22,7 +22,7 @@ namespace Zombs_R_Cute_ArtemisDrop
             UnturnedPlayer player = UnturnedPlayer.FromCSteamID((CSteamID)ulong.Parse(caller.Id));
             if (Vector3.Distance(player.Position, DropPosition) > 15f)
             {
-                UnturnedChat.Say("You need to be next to the drop pad on Fletcher island to use this command.", Color.yellow);
+                UnturnedChat.Say(caller,"You need to be next to the drop pad on Fletcher island to use this command.", Color.yellow);
                 return;
             }
             
