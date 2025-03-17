@@ -15,17 +15,19 @@ namespace Zombs_R_Cute_ArtemisDrop
         private const ushort DropModuleId = 51328;
         private const ushort DropCrateId = 51694;
         private const ushort DropSpawnTableId = 51151;
-        private Vector3 DropPosition = new Vector3(361.96f, 29.5f, 199.19f); //Fletcher island
+        private const double OffsetRange = 2.0f;
+        private Vector3 _dropPosition = new Vector3(361.96f, 29.5f, 199.19f); //Fletcher island
 
         public void Execute(IRocketPlayer caller, string[] command)
         {
             UnturnedPlayer player = UnturnedPlayer.FromCSteamID((CSteamID)ulong.Parse(caller.Id));
-            if (Vector3.Distance(player.Position, DropPosition) > 15f)
+            if (Vector3.Distance(player.Position, _dropPosition) > 15f)
             {
-                UnturnedChat.Say(caller,"You need to be next to the drop pad on Fletcher island to use this command.", Color.yellow);
+                UnturnedChat.Say(caller, "You need to be next to the drop pad on Fletcher island to use this command.",
+                    Color.yellow);
                 return;
             }
-            
+
             var inventorySearchResult = player.Inventory.search(DropModuleId, true, true); // 51328 Airdrop call module
             if (inventorySearchResult.Count > 0)
             {
@@ -34,9 +36,10 @@ namespace Zombs_R_Cute_ArtemisDrop
                     player.Inventory.getIndex(result.page, result.jar.x, result.jar.y));
                 var asset = Assets.find(EAssetType.ITEM, DropCrateId);
                 SpawnCarepackage();
+                UnturnedChat.Say(caller, "Your drop has landed on Fletcher Island.");
                 return;
             }
-            
+
             UnturnedChat.Say(caller, "You do not have an Airdrop Call Module in your inventory.", Color.red);
         }
 
@@ -44,12 +47,12 @@ namespace Zombs_R_Cute_ArtemisDrop
         private void SpawnCarepackage()
         {
             Random random = new Random();
-            var randomOffsetx = new Vector3(random.Next(-2, 2), 0, random.Next(-2, 2));
-            DropPosition += randomOffsetx;
-            
+            var randomOffset = new Vector3((float)(random.NextDouble() * OffsetRange * 2 - OffsetRange), 0,
+                (float)(random.NextDouble() * OffsetRange * 2 - OffsetRange));
+
             Transform barricade = BarricadeManager.dropBarricade(
                 new Barricade(Assets.find(EAssetType.ITEM, DropCrateId) as ItemBarricadeAsset), (Transform)null,
-                DropPosition, 0.0f, 0.0f, 0.0f, 0UL, 0UL);
+                _dropPosition + randomOffset, 0.0f, (float)random.NextDouble() * 360.0f, 0.0f, 0UL, 0UL);
             if ((UnityEngine.Object)barricade != (UnityEngine.Object)null)
             {
                 InteractableStorage component = barricade.GetComponent<InteractableStorage>();
@@ -76,6 +79,7 @@ namespace Zombs_R_Cute_ArtemisDrop
                 barricade.gameObject.AddComponent<CarepackageDestroy>();
             }
         }
+
         private string OnGetSpawnTableErrorContext() => "airdrop care package";
 
         public AllowedCaller AllowedCaller => AllowedCaller.Player;
